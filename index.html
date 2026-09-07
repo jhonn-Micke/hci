@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica de Interfaces - Bootstrap Puro</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light user-select-none d-flex flex-column align-items-center justify-content-center min-vh-100 p-3">
+
+    <!-- TÍTULO -->
+    <h4 class="mb-3 text-secondary text-center fw-bold">Control de Avatar (Matriz 3x3)</h4>
+
+    <!-- CONTENEDOR ANCHO DEL TABLERO (Controla el tamaño responsivo) -->
+    <div class="col-11 col-sm-7 col-md-5 col-lg-4 mb-4">
+        
+        <!-- CUADRÍCULA 3x3 (Usando filas y columnas de Bootstrap) -->
+        <div class="row row-cols-3 g-0 border border-2 border-secondary shadow bg-white rounded" id="board">
+            
+            <!-- Fila 0 -->
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-0-0"></div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-0-1"></div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-0-2"></div>
+            
+            <!-- Fila 1 -->
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-1-0"></div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-1-1">
+                <!-- AVATAR INICIAL EN EL CENTRO (1,1) -->
+                <img id="avatar" src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="Avatar" class="p-2 object-fit-contain">
+            </div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-1-2"></div>
+            
+            <!-- Fila 2 -->
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-2-0"></div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-2-1"></div>
+            <div class="col border border-secondary ratio ratio-1x1 d-flex align-items-center justify-content-center" id="cell-2-2"></div>
+        
+        </div>
+    </div>
+
+    <!-- BOTONES DE CONTROL (Orden exacto: ⬅️ ⬇️ ⬆️ ➡️) -->
+    <div class="d-flex gap-2 mb-4">
+        <button class="btn btn-outline-secondary fs-2 shadow-sm px-3 py-2" onclick="move('LEFT')">⬅️</button>
+        <button class="btn btn-outline-secondary fs-2 shadow-sm px-3 py-2" onclick="move('DOWN')">⬇️</button>
+        <button class="btn btn-outline-secondary fs-2 shadow-sm px-3 py-2" onclick="move('UP')">⬆️</button>
+        <button class="btn btn-outline-secondary fs-2 shadow-sm px-3 py-2" onclick="move('RIGHT')">➡️</button>
+    </div>
+
+    <!-- INFORMACIÓN DE PARADIGMAS -->
+    <div class="card p-3 shadow-sm text-center border-0 bg-white col-11 col-sm-7 col-md-5 col-lg-4">
+        <p class="small text-muted mb-0">
+            <strong>Paradigmas de Interacción:</strong><br>
+            1. 👆 <strong>Botones táctiles:</strong> Toca las flechas.<br>
+            2. 👈👉 <strong>Gestos táctiles (Swipe):</strong> Desliza tu dedo en el tablero.<br>
+            3. ⌨️ <strong>Teclado:</strong> Usa las flechas (en PC).
+        </p>
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // Posición inicial (Fila 1, Columna 1 -> Centro de la matriz 3x3)
+        let row = 1;
+        let col = 1;
+
+        const avatar = document.getElementById('avatar');
+        const board = document.getElementById('board');
+
+        // Mueve el avatar al contenedor según la coordenada actual
+        function updatePosition() {
+            const targetCell = document.getElementById(`cell-${row}-${col}`);
+            if (targetCell) {
+                targetCell.appendChild(avatar);
+            }
+        }
+
+        // Lógica para limitar el movimiento en la matriz 3x3 (límites 0 a 2)
+        function move(direction) {
+            if (direction === 'UP' && row > 0) row--;
+            if (direction === 'DOWN' && row < 2) row++;
+            if (direction === 'LEFT' && col > 0) col--;
+            if (direction === 'RIGHT' && col < 2) col++;
+            
+            updatePosition();
+        }
+
+        // Paradigma: Teclas de dirección (PC)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') move('UP');
+            if (e.key === 'ArrowDown') move('DOWN');
+            if (e.key === 'ArrowLeft') move('LEFT');
+            if (e.key === 'ArrowRight') move('RIGHT');
+        });
+
+        // Paradigma: Gestos táctiles / Swipe (Celular)
+        let startX = 0;
+        let startY = 0;
+
+        board.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        board.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+
+            const diffX = endX - startX;
+            const diffY = endY - startY;
+            const threshold = 30; // Sensibilidad del deslizamiento
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > threshold) move('RIGHT');
+                else if (diffX < -threshold) move('LEFT');
+            } else {
+                if (diffY > threshold) move('DOWN');
+                else if (diffY < -threshold) move('UP');
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
